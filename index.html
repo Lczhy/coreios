@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no" />
+  <title>CORE · 定制网站 | 随心所建</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    /* 基础样式 + 移动端优化 */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fafaf9;
+      color: #1c1c1c;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3, .serif { font-family: 'Playfair Display', serif; font-weight: 500; letter-spacing: -0.02em; }
+    .glass-nav {
+      background: rgba(250,250,249,0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(200,180,140,0.15);
+    }
+    .btn-capsule {
+      display: inline-block; padding: 0.8rem 2.4rem; border-radius: 9999px;
+      border: 1px solid rgba(140,120,90,0.2); background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(8px); transition: all 0.4s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-capsule:active { background: #1c1c1c; color: #fafaf9; border-color: #1c1c1c; }
+    .price-card {
+      border: 1px solid rgba(180,160,130,0.15); background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(12px); transition: all 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .price-card:active { transform: scale(0.98); }
+    .demo-card { background: rgba(255,255,255,0.75); backdrop-filter: blur(20px); border: 1px solid rgba(200,180,140,0.2); }
+    .gold-text { color: #8a7356; }
+    .addon-badge { background: rgba(200,180,130,0.08); border-left: 3px solid #b8a27c; }
+    .free-badge { background: rgba(130,160,110,0.08); border-left: 3px solid #7fa86a; }
+    .recommend-tag {
+      background: rgba(200,180,130,0.15); color: #7a6346; font-size: 0.65rem;
+      padding: 0.25rem 0.9rem; border-radius: 999px; border: 1px solid rgba(180,150,110,0.25);
+    }
+    .animate-on-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.7s, transform 0.7s; }
+    .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+    .preview-note { font-size: 0.7rem; opacity: 0.5; font-style: italic; }
+    
+    /* 侧边导航 (移动端自适应) */
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; gap: 14px; }
+    .nav-dot { width: 8px; height: 8px; border-radius: 20px; background: rgba(140,120,90,0.35); backdrop-filter: blur(4px); border: 1px solid rgba(180,150,110,0.4); transition: all 0.25s; cursor: pointer; position: relative; }
+    .nav-dot.active { width: 10px; height: 10px; background: #8a7356; transform: scale(1.8); }
+    .nav-label { position: absolute; right: 24px; top: -2px; background: rgba(250,250,249,0.9); backdrop-filter: blur(8px); padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; border: 1px solid rgba(180,150,110,0.2); }
+    .nav-dot:hover .nav-label { opacity: 1; }
+    @media (max-width: 768px) {
+      .nav-dots { right: 8px; gap: 10px; background: rgba(250,250,249,0.3); backdrop-filter: blur(8px); padding: 8px 5px; border-radius: 40px; }
+      .nav-dot { width: 6px; height: 6px; }
+      .nav-dot.active { width: 8px; height: 8px; }
+      .nav-label { display: none; }
+    }
+    
+    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+    .shake-effect { animation: shake 0.3s ease-in-out; }
+    .tiny-note { font-size: 0.55rem; opacity: 0.6; letter-spacing: 0.2px; }
+    .cart-section { background: rgba(255,255,255,0.6); backdrop-filter: blur(16px); border: 1px solid rgba(200,180,140,0.25); border-radius: 2rem; }
+    input, textarea { font-size: 16px; }
+    @supports not (backdrop-filter: blur(10px)) {
+      .glass-nav, .price-card, .demo-card, .cart-section { background: rgba(255,255,255,0.9); }
+    }
+  </style>
+</head>
+<body class="antialiased text-[#1c1c1c]">
+  <div class="nav-dots">
+    <div class="nav-dot" data-target="hero"><span class="nav-label">首页</span></div>
+    <div class="nav-dot" data-target="why"><span class="nav-label">为何需要</span></div>
+    <div class="nav-dot" data-target="services"><span class="nav-label">设计语言</span></div>
+    <div class="nav-dot" data-target="pricing"><span class="nav-label">透明方案</span></div>
+    <div class="nav-dot" data-target="demo"><span class="nav-label">实时预览</span></div>
+    <div class="nav-dot" data-target="cart"><span class="nav-label">购物车</span></div>
+    <div class="nav-dot" data-target="contact"><span class="nav-label">联系</span></div>
+  </div>
+
+  <main class="relative z-10">
+    <nav class="glass-nav fixed top-0 left-0 w-full z-50 px-5 md:px-12 py-4 md:py-5 flex justify-between items-center">
+      <div class="text-xl md:text-2xl serif font-semibold tracking-tight">CORE<span class="text-[#b8a27c] text-lg ml-1">.</span></div>
+      <div class="hidden md:flex gap-10 text-sm uppercase tracking-wider text-[#3a3a3a]">
+        <a href="#why" class="hover:text-[#8a7356]">为何需要</a>
+        <a href="#services" class="hover:text-[#8a7356]">设计语言</a>
+        <a href="#pricing" class="hover:text-[#8a7356]">定制</a>
+        <a href="#cart" class="hover:text-[#8a7356]">购物车</a>
+        <a href="#contact" class="hover:text-[#8a7356]">联系</a>
+      </div>
+      <div class="md:hidden text-xs gold-text">菜单</div>
+    </nav>
+
+    <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
+      <h1 class="serif text-4xl md:text-7xl lg:text-8xl font-medium leading-[1.15] animate-on-scroll">随心所建<br>即你所想</h1>
+      <p class="mt-6 md:mt-8 text-base md:text-xl text-[#4a4a4a] max-w-2xl font-light animate-on-scroll">自由定义 · 灵动组合 · 从框架到细节皆可掌握</p>
+      <div class="mt-10 md:mt-12 animate-on-scroll"><a href="#pricing" class="btn-capsule text-base md:text-lg px-8 md:px-12 py-3 md:py-4">探索定制方案</a></div>
+      <div class="absolute bottom-8 md:bottom-10 text-sm text-[#6a6a6a] tracking-widest border-b border-[#b8a27c]/30 pb-2">向下滚动</div>
+    </section>
+
+    <section id="why" class="py-20 md:py-24 px-5 md:px-12 bg-white">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12 md:mb-16">
+          <h2 class="serif text-3xl md:text-5xl mb-3 md:mb-4 text-[#1c1c1c]">让世界看见你的故事</h2>
+          <p class="text-[#555] max-w-2xl mx-auto text-sm md:text-base">不止是网站，更是你与世界对话的窗口。</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-sm">
+          <div class="animate-on-scroll p-6 rounded-2xl bg-[#f8f7f5] border border-[#e8e4de]"><div class="text-3xl mb-4 gold-text">01</div><h3 class="serif text-xl mb-3">24小时在线展厅</h3><p class="text-[#555] leading-relaxed">无论你是摄影师、设计师还是写作者，专属网站让作品摆脱算法束缚，随时以最优雅的姿态呈现。</p></div>
+          <div class="animate-on-scroll p-6 rounded-2xl bg-[#f8f7f5] border border-[#e8e4de]" style="transition-delay:0.1s"><div class="text-3xl mb-4 gold-text">02</div><h3 class="serif text-xl mb-3">建立专业信任</h3><p class="text-[#555] leading-relaxed">独立域名与精雕细琢的排版传递可靠与品位，更容易赢得合作机会与媒体关注。</p></div>
+          <div class="animate-on-scroll p-6 rounded-2xl bg-[#f8f7f5] border border-[#e8e4de]" style="transition-delay:0.2s"><div class="text-3xl mb-4 gold-text">03</div><h3 class="serif text-xl mb-3">完全掌控内容</h3><p class="text-[#555] leading-relaxed">摆脱平台规则束缚，自由定义风格、扩展功能，真正拥有自己的数字家园。</p></div>
+        </div>
+        <div class="mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-[#f8f7f5] p-6 md:p-8 rounded-3xl border border-[#e8e4de] animate-on-scroll"><span class="text-2xl mb-3 block">🎁</span><h3 class="serif text-xl md:text-2xl mb-3">一份独一无二的礼物</h3><p class="text-[#555] leading-relaxed text-sm">为她或他定制一个专属网页，存放你们的照片、文字与共同回忆。比起转瞬即逝的鲜花，一个永久在线的纪念空间更能诉说心意。</p></div>
+          <div class="bg-[#f8f7f5] p-6 md:p-8 rounded-3xl border border-[#e8e4de] animate-on-scroll" style="transition-delay:0.1s"><span class="text-2xl mb-3 block">💞</span><h3 class="serif text-xl md:text-2xl mb-3">两个人的秘密花园</h3><p class="text-[#555] leading-relaxed text-sm">打造只属于你们的线上角落，记录从初见到如今的点点滴滴。无需分享给他人，这是你们共同维护的浪漫编年史。</p></div>
+          <div class="bg-[#f8f7f5] p-6 md:p-8 rounded-3xl border border-[#e8e4de] animate-on-scroll" style="transition-delay:0.2s"><span class="text-2xl mb-3 block">📖</span><h3 class="serif text-xl md:text-2xl mb-3">自己的私密日记</h3><p class="text-[#555] leading-relaxed text-sm">一个仅自己可见的树洞，记录每日思绪、灵感碎片或成长轨迹。加密保护，安静相伴，这里是数字世界里只属于你的精神角落。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="services" class="py-20 md:py-28 px-5 md:px-12 bg-[#f8f7f5]">
+      <div class="max-w-7xl mx-auto">
+        <div class="mb-16 md:mb-24 flex flex-col md:flex-row md:items-end justify-between">
+          <h2 class="serif text-3xl md:text-6xl animate-on-scroll">重叠与留白<br><span class="text-xl md:text-2xl font-light text-[#666] mt-2 md:mt-3 block">—— 空间的诗意</span></h2>
+          <p class="text-[#555] max-w-md text-sm md:text-base animate-on-scroll">通过图层交错、负空间与节奏控制，构建富有呼吸感的视觉叙事。</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-[auto] md:auto-rows-[230px]">
+          <div class="md:col-span-7 row-span-1 md:row-span-2 relative z-10 animate-on-scroll rounded-3xl bg-gradient-to-br from-[#f0eeea] to-[#e2ddd6] shadow-md flex items-center justify-center p-6 h-48 md:h-auto"><span class="serif text-5xl md:text-7xl text-black/5 font-bold">构</span><div class="absolute bottom-4 left-4 md:bottom-6 md:left-6"><span class="text-xs md:text-sm uppercase tracking-widest text-[#8a7356]">Foundation</span><p class="serif text-2xl md:text-3xl mt-1">STRUCTURE</p></div></div>
+          <div class="md:col-span-5 row-span-1 md:col-start-8 relative z-20 md:-ml-12 md:mt-12 animate-on-scroll rounded-2xl bg-gradient-to-br from-[#e8e4de] to-[#d6d0c8] shadow-lg flex items-center justify-center p-4 h-40 md:h-auto"><span class="serif text-4xl md:text-5xl text-black/8">留</span><div class="absolute bottom-4 left-4"><p class="text-xs gold-text uppercase">Whitespace</p><p class="serif text-lg md:text-xl">负形之美</p></div></div>
+          <div class="md:col-span-6 row-span-1 md:col-start-1 md:row-start-3 animate-on-scroll rounded-2xl bg-gradient-to-br from-[#ece9e5] to-[#ddd8d2] flex items-center justify-center p-4 h-36 md:h-auto"><span class="serif text-3xl md:text-4xl text-black/8">韵律</span><div class="absolute bottom-4 left-4"><p class="text-xs gold-text">Rhythm</p><p class="serif text-base md:text-lg">重复与变化</p></div></div>
+          <div class="md:col-span-6 row-span-1 md:row-span-2 md:col-start-7 md:row-start-3 md:-mt-14 animate-on-scroll rounded-3xl bg-gradient-to-br from-[#e4dfd9] to-[#d2ccc4] shadow-md flex items-center justify-center p-6 h-48 md:h-auto"><span class="serif text-5xl md:text-6xl text-black/8">层叠</span><div class="absolute bottom-4 left-4 md:bottom-6 md:left-6"><p class="text-xs gold-text">Layers</p><p class="serif text-xl md:text-2xl">深度与交错</p></div></div>
+        </div>
+        <div class="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-sm">
+          <div class="animate-on-scroll"><p class="serif text-lg md:text-xl mb-2">01 留白呼吸</p><p class="text-[#555]">适当的空白区域让内容更聚焦，提升阅读舒适度与高级感。</p></div>
+          <div class="animate-on-scroll" style="transition-delay:0.1s"><p class="serif text-lg md:text-xl mb-2">02 图层交错</p><p class="text-[#555]">通过z轴层叠与透明感，创造丰富的视觉层次。</p></div>
+          <div class="animate-on-scroll" style="transition-delay:0.2s"><p class="serif text-lg md:text-xl mb-2">03 节奏把控</p><p class="text-[#555]">图片与文字交替出现的韵律，引导用户视线。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="py-20 md:py-28 px-5 md:px-12">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12 md:mb-16"><h2 class="serif text-3xl md:text-6xl mb-4 md:mb-5 animate-on-scroll">透明方案 · 随心组合</h2><p class="text-[#555] text-sm md:text-base animate-on-scroll">点击卡片预览效果，灵活搭配附加项。</p></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5">
+          <!-- 五个定价卡片，内容不变但精简 -->
+          <div class="price-card p-5 rounded-3xl flex flex-col" data-demo="essential"><span class="text-xs uppercase gold-text mb-1">基础</span><h3 class="serif text-2xl mb-1">轻量文案</h3><p class="text-2xl font-light mb-2">¥17.7</p><ul class="text-[0.65rem] space-y-1 mb-2"><li>✓ 800字 · 3次改稿</li><li>✓ 1种固定排版</li><li>✕ 无手机适配</li></ul><div class="mb-2 tiny-note">➕ 每增100字 +¥2.0 或 +¥13.7 不限字</div><div class="mt-1 pt-2 border-t addon-badge p-1.5 text-[0.6rem]"><span class="gold-text">+¥5.7</span> 鼠标跟随+3D悬停</div><div class="mt-1 tiny-note">📝 上线后修改内容 ¥15/次 · 自主更新 +¥100</div><div class="mt-2 text-right text-[0.65rem] gold-text">点击预览 →</div></div>
+          <div class="price-card p-5 rounded-3xl flex flex-col" data-demo="design"><span class="text-xs uppercase gold-text mb-1">排版款</span><h3 class="serif text-2xl mb-1">优美排版</h3><p class="text-2xl font-light mb-2">¥20.7</p><ul class="text-[0.65rem] space-y-1 mb-2"><li>✓ 2000字 · 5次改稿</li><li>✓ 多种排版可选</li><li>✕ 无手机适配</li></ul><div class="mb-2 tiny-note">➕ 每增100字 +¥2.0 或 +¥13.7 不限字</div><div class="mt-1 pt-2 border-t addon-badge p-1.5 text-[0.6rem]"><span class="gold-text">+¥5.7</span> 鼠标跟随+3D悬停</div><div class="mt-1 tiny-note">📝 上线后修改内容 ¥15/次 · 自主更新 +¥100</div><div class="mt-2 text-right text-[0.65rem] gold-text">点击预览 →</div></div>
+          <div class="price-card p-5 rounded-3xl flex flex-col relative" data-demo="responsive"><span class="recommend-tag absolute -top-2 right-3">📱 响应式</span><span class="text-xs uppercase gold-text mb-1">全响应</span><h3 class="serif text-2xl mb-1">双端适配</h3><p class="text-2xl font-light mb-2">¥37.7</p><ul class="text-[0.65rem] space-y-1 mb-2"><li>✓ 无字数上限 · 10次改稿</li><li>✓ 移动端深度适配</li><li>✓ 双端适配</li></ul><div class="mt-1 pt-2 border-t addon-badge p-1.5 text-[0.6rem]"><span class="gold-text">+¥5.7</span> 鼠标跟随+3D悬停</div><div class="mt-1 tiny-note">📝 上线后修改内容 ¥15/次 · 自主更新 +¥100</div><div class="mt-2 text-right text-[0.65rem] gold-text">点击预览 →</div></div>
+          <div class="price-card p-5 rounded-3xl flex flex-col relative" data-demo="unlimited"><span class="recommend-tag absolute -top-2 right-3">🖼️ 20张图片</span><span class="text-xs uppercase gold-text mb-1">创作款</span><h3 class="serif text-2xl mb-1">影像空间</h3><p class="text-2xl font-light mb-2">¥67.7</p><ul class="text-[0.65rem] space-y-1 mb-2"><li>✓ 不限文字 · 20张图片</li><li>✓ 10次改稿</li><li>✓ 双端适配</li></ul><div class="mt-1 pt-2 border-t addon-badge p-1.5 text-[0.6rem]"><span class="gold-text">+¥5.7</span> 鼠标跟随+3D悬停</div><div class="mt-1 tiny-note">📝 上线后修改内容 ¥15/次 · 自主更新 +¥100</div><div class="mt-2 text-right text-[0.65rem] gold-text">点击预览 →</div></div>
+          <div class="price-card p-5 rounded-3xl flex flex-col relative" data-demo="deep"><span class="recommend-tag absolute -top-2 right-3">👑 旗舰</span><span class="text-xs uppercase gold-text mb-1">深度定制</span><h3 class="serif text-2xl mb-1">完全自由</h3><p class="text-2xl font-light mb-1">¥127.7</p><ul class="text-[0.65rem] space-y-1 mb-2"><li>✓ 20次改稿 · 源码交付</li><li>✓ 双端适配</li></ul><div class="mt-1 pt-2 border-t free-badge p-1.5 text-[0.6rem]"><span class="text-[#7fa86a]">✨ 免费赠送</span> 鼠标跟随+3D悬停</div><div class="mt-1 tiny-note flex justify-between"><span>📝 上线后免费修改3次</span><span class="gold-text">之后每次 ¥10</span></div><div class="mt-2 text-right text-[0.65rem] gold-text">点击预览 →</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo" class="py-20 md:py-24 px-5 md:px-12 bg-[#f4f3f1]">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-8 md:mb-10"><span class="text-sm gold-text uppercase">实时预览</span><h2 class="serif text-3xl md:text-4xl mt-3" id="demoTitle">轻量文案 · 效果展示</h2><p class="text-[#666] mt-2 text-sm md:text-base" id="demoDesc"></p></div>
+        <div id="demoContent" class="demo-card p-6 md:p-12 rounded-3xl transition-all"></div>
+        <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+          <button id="backToPricing" class="btn-capsule px-6 py-3 text-sm">返回套餐选择</button>
+          <button id="orderNowBtn" class="btn-capsule px-8 py-3 text-sm bg-[#1c1c1c] text-white border-[#1c1c1c]">创建订单 →</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="cart" class="py-20 px-5 md:px-12">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8 md:mb-10"><span class="text-sm uppercase tracking-widest gold-text">确认订单</span><h2 class="serif text-3xl md:text-4xl mt-3">定制购物车</h2><p class="text-[#666] mt-2" id="cartPlanName">轻量文案</p></div>
+        <div class="cart-section p-5 md:p-8 rounded-3xl">
+          <div class="space-y-5 md:space-y-6">
+            <div class="flex justify-between items-center border-b border-[#ddd] pb-3 md:pb-4"><span class="font-medium">基础方案</span><span id="cartBasePrice" class="gold-text text-xl">¥17.7</span></div>
+            <div id="cartAddons" class="space-y-4"></div>
+            <div class="pt-2"><label class="block text-sm mb-2 text-[#555]">📋 网站要求与功能备注</label><textarea id="orderRemarks" rows="3" class="w-full p-3 rounded-xl bg-white/50 border border-[#ddd] focus:border-[#b8a27c] outline-none text-sm" placeholder="请描述您对网站的具体要求、期望色调、参考案例等……"></textarea></div>
+            <div class="flex justify-between items-center pt-4 border-t border-[#ddd]"><span class="text-base md:text-lg font-medium">总计</span><span id="cartTotal" class="text-2xl gold-text font-light">¥17.7</span></div>
+            <button id="submitOrder" class="w-full btn-capsule bg-[#1c1c1c] text-white border-[#1c1c1c] py-3 md:py-4">请保存订单并联系我们</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer id="contact" class="py-16 md:py-20 px-6 border-t border-[#e5e0da]">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end"><div><h3 class="serif text-3xl md:text-5xl mb-4">开始创作<span class="text-[#b8a27c]">.</span></h3><p class="text-sm md:text-base">i228702890@outlook.com · 24h内回复</p></div><div class="mt-8 md:mt-0 text-right"><p class="text-sm gold-text">社交</p><div class="space-x-6"><a href="#" class="hover:text-[#8a7356]">Instagram</a><a href="#" class="hover:text-[#8a7356]">Twitter</a></div><p class="mt-8 md:mt-12 text-xs text-[#888]">© 2025 CORE. 随心所建</p></div></div>
+    </footer>
+  </main>
+
+  <script>
+    (function() {
+      // 极简移动端检测 - 不依赖任何第三方库
+      var isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // 不使用任何平滑滚动库，只用原生滚动（避免微信兼容问题）
+      function scrollToElement(target, offset) {
+        offset = offset || 40;
+        var rect = target.getBoundingClientRect();
+        var y = rect.top + window.pageYOffset - offset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      
+      // 导航点高亮
+      var sections = ['hero','why','services','pricing','demo','cart','contact'].map(function(id) { return document.getElementById(id); });
+      var dots = document.querySelectorAll('.nav-dot');
+      function updateActiveDot() {
+        var scrollY = window.scrollY;
+        for (var i = 0; i < sections.length; i++) {
+          var s = sections[i];
+          if (!s) continue;
+          var offsetTop = s.offsetTop - 80;
+          if (scrollY >= offsetTop && scrollY < offsetTop + s.offsetHeight) {
+            for (var j = 0; j < dots.length; j++) dots[j].classList.remove('active');
+            if (dots[i]) dots[i].classList.add('active');
+            break;
+          }
+        }
+      }
+      window.addEventListener('scroll', updateActiveDot);
+      window.addEventListener('resize', updateActiveDot);
+      
+      // 导航点点击滚动
+      for (var k = 0; k < dots.length; k++) {
+        (function(dot) {
+          dot.addEventListener('click', function(e) {
+            dot.classList.add('shake-effect');
+            setTimeout(function() { dot.classList.remove('shake-effect'); }, 300);
+            var targetId = dot.getAttribute('data-target');
+            var target = document.getElementById(targetId);
+            if (target) scrollToElement(target, 40);
+          });
+        })(dots[k]);
+      }
+      
+      // 锚点链接平滑滚动
+      var allLinks = document.querySelectorAll('a[href^="#"]');
+      for (var l = 0; l < allLinks.length; l++) {
+        allLinks[l].addEventListener('click', function(e) {
+          e.preventDefault();
+          var hash = this.getAttribute('href');
+          if (hash === '#') return;
+          var target = document.querySelector(hash);
+          if (target) scrollToElement(target, 40);
+        });
+      }
+      
+      // 简单的滚动触发动画 (不使用 ScrollTrigger，减少依赖)
+      var animatedElements = document.querySelectorAll('.animate-on-scroll');
+      function checkInView() {
+        var windowHeight = window.innerHeight;
+        for (var i = 0; i < animatedElements.length; i++) {
+          var el = animatedElements[i];
+          if (el.classList.contains('visible')) continue;
+          var rect = el.getBoundingClientRect();
+          if (rect.top < windowHeight - 100) {
+            el.classList.add('visible');
+          }
+        }
+      }
+      window.addEventListener('scroll', checkInView);
+      window.addEventListener('load', checkInView);
+      checkInView(); // 初始检查
+      
+      // ---------- 购物车和预览逻辑 (完全原生，无外部库依赖) ----------
+      var currentPlan = 'essential';
+      var plans = {
+        essential: { name: '轻量文案', base: 17.7, hasUnlimited: true, unlimitedPrice: 13.7, per100: 2.0, defaultWords: 800 },
+        design: { name: '优美排版', base: 20.7, hasUnlimited: true, unlimitedPrice: 13.7, per100: 2.0, defaultWords: 2000 },
+        responsive: { name: '双端适配', base: 37.7, hasUnlimited: false },
+        unlimited: { name: '影像空间', base: 67.7, hasUnlimited: false },
+        deep: { name: '完全自由', base: 127.7, hasUnlimited: false }
+      };
+      
+      var demoTitle = document.getElementById('demoTitle');
+      var demoDesc = document.getElementById('demoDesc');
+      var demoContent = document.getElementById('demoContent');
+      var cartPlanName = document.getElementById('cartPlanName');
+      var cartBasePrice = document.getElementById('cartBasePrice');
+      var cartAddons = document.getElementById('cartAddons');
+      var cartTotalSpan = document.getElementById('cartTotal');
+      
+      var demoData = {
+        essential: { title:'轻量文案 · 效果展示', desc:'800字，3次改稿。+2元/100字或13.7元不限字。', content:'<div class="space-y-4"><p class="text-sm">轻量方案提供经典左对齐排版，适合个人简介或临时公告。如需更多字数，可按100字/2元增加，或支付13.7元解锁无上限。</p><div class="bg-white/40 p-6 rounded-xl"><h3 class="serif text-2xl">示例标题</h3><p class="mt-2 text-[#555]">正文使用Inter字体，行距1.6，阅读流畅。</p></div><div class="preview-note mt-4">* 部署后修改内容15元/次，自主更新+100元。</div></div>' },
+        design: { title:'优美排版 · 多种风格', desc:'2000字，5次改稿。+2元/100字或13.7元不限字。', content:'<div class="space-y-6"><p class="text-sm">多种杂志级排版可选，字距行距精心调整。同样支持按100字/2元增量或13.7元不限字数。</p><div class="grid grid-cols-2 gap-4"><div class="p-3 bg-white/40 rounded"><span class="serif">经典衬线</span></div><div class="p-3 bg-white/40 rounded"><span class="serif">杂志分栏</span></div><div class="p-3 bg-white/40 rounded"><span class="serif">极简无衬线</span></div><div class="p-3 bg-white/40 rounded"><span class="serif">复古报纸</span></div></div><div class="preview-note">* 上线后修改15元/次，自主更新+100元。</div></div>' },
+        responsive: { title:'双端适配 · 无上限', desc:'不限文字，10次改稿，跨设备完美。', content:'<div class="space-y-6"><p class="text-sm leading-relaxed">全响应式方案，手机/平板/电脑智能适配。10次免费改稿。包含双端适配特性。</p><div class="flex gap-4"><div class="w-20 h-32 bg-[#e0dcd5] rounded-2xl"></div><div class="w-32 h-20 bg-[#e0dcd5] rounded-xl hidden sm:block"></div></div><p class="text-xs text-[#666]">* 修改内容15元/次，自主更新+100元。</p></div>' },
+        unlimited: { title:'影像空间 · 丰富布局', desc:'不限文字，20张图片，10次改稿。含双端适配。', content:'<div class="space-y-8"><p class="text-sm">重叠、大小错落、网格等多种布局可选。双端适配，作品展示更灵活。</p><div class="relative h-56"><div class="absolute left-0 top-0 w-32 h-40 bg-gradient-to-br from-[#d9d2ca] to-[#b8afa4] rounded-2xl shadow-lg rotate-[-6deg] z-10 border-4 border-white/80"></div><div class="absolute left-20 top-4 w-36 h-44 bg-gradient-to-br from-[#c4bbb2] to-[#a59b8f] rounded-2xl shadow-xl rotate-[3deg] z-20 border-4 border-white/80"></div><div class="absolute right-4 bottom-0 w-40 h-28 bg-gradient-to-br from-[#b8afa4] to-[#9a9085] rounded-2xl shadow-lg rotate-[-3deg] border-4 border-white/80"></div></div><p class="text-xs text-[#666]">* 上线后修改15元/次，自主更新+100元。</p></div>' },
+        deep: { title:'深度定制 · 完全自由', desc:'20次改稿，源码交付。上线后免费修改3次，之后每次10元。', content:'<div class="space-y-5"><p class="text-sm leading-relaxed">源码交付，20次不限页改稿，已包含双端适配。交付后享有3次免费内容修改服务，超出后每次仅需10元。如需完全自主更新权限，可加100元解锁。</p><div class="grid grid-cols-2 gap-4"><div class="bg-white/40 p-4 rounded-xl"><span class="font-medium">改稿</span><p class="text-2xl">20次</p></div><div class="bg-white/40 p-4 rounded-xl"><span class="font-medium">后期修改</span><p>3次免费 / 之后¥10</p></div></div><div class="bg-gradient-to-r from-[#ede9e4] to-[#e0d9d2] p-6 rounded-2xl"><p class="serif text-lg">✨ 完全掌控，后续无忧。</p></div></div>' }
+      };
+      
+      function renderCart() {
+        var plan = plans[currentPlan];
+        cartPlanName.textContent = plan.name;
+        cartBasePrice.textContent = '¥' + plan.base;
+        var html = '';
+        if (currentPlan === 'essential' || currentPlan === 'design') {
+          html += '<div class="border-b border-[#ddd] pb-3"><p class="text-sm font-medium mb-2">📈 字数升级</p><label class="flex items-center gap-2 text-sm"><input type="radio" name="words" value="none" checked class="accent-[#b8a27c]"> 保持基础字数 (' + plan.defaultWords + '字)</label><label class="flex items-center gap-2 text-sm"><input type="radio" name="words" value="per100" class="accent-[#b8a27c]"> 每增加100字 +¥2.0 <input type="number" id="extraWords" min="0" step="100" value="0" class="w-20 ml-2 p-1 text-sm border rounded-lg" disabled></label><label class="flex items-center gap-2 text-sm"><input type="radio" name="words" value="unlimited" class="accent-[#b8a27c]"> 不限字数 +¥' + plan.unlimitedPrice + '</label></div>';
+        }
+        if (currentPlan === 'deep') {
+          html += '<div class="border-b border-[#ddd] pb-3"><p class="text-sm font-medium mb-2">✨ 高级鼠标跟随+3D悬停</p><p class="text-xs text-[#7fa86a]">已免费包含</p></div>';
+        } else {
+          html += '<div class="border-b border-[#ddd] pb-3"><label class="flex items-center gap-2 text-sm"><input type="checkbox" id="addMouse" class="accent-[#b8a27c]"> ✨ 高级鼠标跟随+3D悬停 <span class="gold-text">+¥5.7</span></label></div>';
+        }
+        if (currentPlan === 'deep') {
+          html += '<div class="border-b border-[#ddd] pb-3"><p class="text-sm font-medium mb-2">📝 后期内容修改</p><p class="text-xs">上线后免费修改3次，之后每次 ¥10</p><label class="flex items-center gap-2 text-sm mt-3"><input type="checkbox" id="addDeepUpdate" class="accent-[#b8a27c]"> 🔓 自主更新权限 <span class="gold-text">+¥100</span></label></div>';
+        } else {
+          html += '<div class="border-b border-[#ddd] pb-3"><p class="text-sm font-medium mb-2">📝 后期服务</p><label class="flex items-center gap-2 text-sm"><input type="checkbox" id="addUpdate" class="accent-[#b8a27c]"> 自主更新权限 +¥100</label><p class="text-xs text-[#888] mt-1">或每次修改 ¥15/次 (下单后联系)</p></div>';
+        }
+        cartAddons.innerHTML = html;
+        
+        // 绑定字数相关事件
+        if (currentPlan === 'essential' || currentPlan === 'design') {
+          var radioNone = document.querySelector('input[value="none"]');
+          var radioPer100 = document.querySelector('input[value="per100"]');
+          var radioUnlimited = document.querySelector('input[value="unlimited"]');
+          var extraInput = document.getElementById('extraWords');
+          if (radioPer100) radioPer100.addEventListener('change', function() { extraInput.disabled = false; updateTotal(); });
+          if (radioNone) radioNone.addEventListener('change', function() { extraInput.disabled = true; updateTotal(); });
+          if (radioUnlimited) radioUnlimited.addEventListener('change', function() { extraInput.disabled = true; updateTotal(); });
+          if (extraInput) extraInput.addEventListener('input', updateTotal);
+        }
+        var mouseChk = document.getElementById('addMouse');
+        var updateChk = document.getElementById('addUpdate');
+        var deepUpdateChk = document.getElementById('addDeepUpdate');
+        if (mouseChk) mouseChk.addEventListener('change', updateTotal);
+        if (updateChk) updateChk.addEventListener('change', updateTotal);
+        if (deepUpdateChk) deepUpdateChk.addEventListener('change', updateTotal);
+        updateTotal();
+      }
+      
+      function updateTotal() {
+        var plan = plans[currentPlan];
+        var total = plan.base;
+        if (currentPlan === 'essential' || currentPlan === 'design') {
+          var radioPer100 = document.querySelector('input[value="per100"]');
+          var radioUnlimited = document.querySelector('input[value="unlimited"]');
+          var extraWords = document.getElementById('extraWords') ? parseInt(document.getElementById('extraWords').value) || 0 : 0;
+          if (radioPer100 && radioPer100.checked) {
+            total += Math.floor(extraWords / 100) * 2.0;
+          } else if (radioUnlimited && radioUnlimited.checked) {
+            total += plan.unlimitedPrice;
+          }
+        }
+        if (currentPlan !== 'deep') {
+          var mouse = document.getElementById('addMouse');
+          var upd = document.getElementById('addUpdate');
+          if (mouse && mouse.checked) total += 5.7;
+          if (upd && upd.checked) total += 100;
+        } else {
+          var deepUpd = document.getElementById('addDeepUpdate');
+          if (deepUpd && deepUpd.checked) total += 100;
+        }
+        cartTotalSpan.textContent = '¥' + total.toFixed(1);
+      }
+      
+      function setPlan(planKey) {
+        currentPlan = planKey;
+        renderCart();
+      }
+      
+      function updateDemoContentOnly(type) {
+        var d = demoData[type] || demoData.essential;
+        demoTitle.textContent = d.title;
+        demoDesc.textContent = d.desc;
+        demoContent.innerHTML = d.content;
+        setPlan(type);
+        if (history.replaceState) history.replaceState(null, '', '#demo-' + type);
+      }
+      
+      function updateDemoAndScroll(type) {
+        updateDemoContentOnly(type);
+        var demoSection = document.getElementById('demo');
+        if (demoSection) scrollToElement(demoSection, 60);
+      }
+      
+      var cards = document.querySelectorAll('.price-card');
+      for (var c = 0; c < cards.length; c++) {
+        (function(card) {
+          card.addEventListener('click', function() {
+            var demoType = card.getAttribute('data-demo');
+            if (demoType) updateDemoAndScroll(demoType);
+          });
+        })(cards[c]);
+      }
+      
+      var backBtn = document.getElementById('backToPricing');
+      if (backBtn) backBtn.addEventListener('click', function() { scrollToElement(document.getElementById('pricing'), 40); });
+      var orderBtn = document.getElementById('orderNowBtn');
+      if (orderBtn) orderBtn.addEventListener('click', function() { scrollToElement(document.getElementById('cart'), 40); });
+      var submitBtn = document.getElementById('submitOrder');
+      if (submitBtn) submitBtn.addEventListener('click', function() {
+        var remarks = document.getElementById('orderRemarks') ? document.getElementById('orderRemarks').value : '';
+        alert('感谢您的订购！\n方案：' + plans[currentPlan].name + '\n总金额：' + cartTotalSpan.textContent + '\n备注：' + (remarks || '无') + '\n请保存此订单信息并联系我们。');
+      });
+      
+      // 初始化页面：回到顶部，显示默认预览
+      window.addEventListener('load', function() {
+        window.scrollTo(0, 0);
+        updateActiveDot();
+        updateDemoContentOnly('essential');
+        // 清除可能残留的hash
+        if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search);
+      });
+      
+      // 监听hash变化（如从外部链接进入）
+      window.addEventListener('hashchange', function() {
+        var hash = window.location.hash;
+        if (hash && hash.indexOf('#demo-') === 0) {
+          var type = hash.substring(6);
+          if (demoData[type]) {
+            var d = demoData[type];
+            demoTitle.textContent = d.title;
+            demoDesc.textContent = d.desc;
+            demoContent.innerHTML = d.content;
+            setPlan(type);
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
